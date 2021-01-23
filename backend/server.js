@@ -14,10 +14,6 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-app.get('/', (req, res) => {
-  res.send('API OK..');
-});
-
 app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
