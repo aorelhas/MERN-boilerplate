@@ -4,19 +4,30 @@ import { Form, Button, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import FormContainer from '../../components/Container/FormContainer';
 import { GoogleLogin } from 'react-google-login';
-import dotenv from 'dotenv';
+import env from 'react-dotenv';
+import { USER_LOGIN_SUCCESS } from '../../constants/userConstants';
 
-const LoginScreen = ({ location }) => {
+const LoginScreen = ({ location, history }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const dispatch = useDispatch();
 
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
+
   const redirect = location.search ? location.search.split('=')[1] : '/';
+
+  useEffect(() => {
+    if (userInfo) {
+      console.log(userInfo);
+      history.push('/dashboard');
+    }
+  }, [history, userInfo, redirect]);
 
   const submitHandler = (e) => {
     e.preventDefault();
-    // dispatch(login(email, password))
+    // dispatch(login(email, password));
   };
 
   const googleSuccess = async (res) => {
@@ -25,7 +36,10 @@ const LoginScreen = ({ location }) => {
     const token = res?.tokenId;
 
     try {
-      dispatch({ type: 'AUTH', data: { result, token } });
+      dispatch({ type: USER_LOGIN_SUCCESS, payload: { result, token } });
+
+      localStorage.setItem('userInfo', JSON.stringify({ result, token }));
+      history.push('/');
     } catch (error) {
       console.error(error);
     }
@@ -63,13 +77,13 @@ const LoginScreen = ({ location }) => {
         </Button>
       </Form>
       <GoogleLogin
-        clientId="302461378214-eg67gbtvu72g9ho2rrn6d4j5obvseo79.apps.googleusercontent.com"
+        clientId={env.GOOGLE_CLIENT_ID}
         render={(renderProps) => (
           <button onClick={renderProps.onClick} disabled={renderProps.disabled}>
             Google Login
           </button>
         )}
-        buttonText={process.env.GOOGLE_CLIENT_ID}
+        buttonText="Login"
         onSuccess={googleSuccess}
         onFailure={googleFailure}
         cookiePolicy={'single_host_origin'}
